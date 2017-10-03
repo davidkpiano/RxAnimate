@@ -1,5 +1,5 @@
 import { ObservableMap } from './types';
 
-export interface IAnimatableScalar<T> {
+export interface IMono<T> {
   value$: T;
 }

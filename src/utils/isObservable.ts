@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/Observable';
-import symbolObservable from 'symbol-observable';
 
-export default function isObservable(obs: any): obs is Observable<any> {
-  return Boolean(obs && obs[symbolObservable]);
+export default function isObservable(value: any): value is Observable<any> {
+  return value instanceof Observable;
+  // return Boolean(obs && obs[symbolObservable]);
 }

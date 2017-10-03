@@ -1,8 +1,7 @@
 import { map as mapOperator } from 'rxjs/operators/map';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { Animatable } from '../Animatable';
 import { Observable } from 'rxjs/Observable';
-import { IAnimatableScalar } from '../interfaces';
+import { IMono } from '../interfaces';
 import { Patch } from '../types';
 
 export interface IMathInputs {
@@ -12,7 +11,7 @@ export interface IMathInputs {
 
 export function map2(
   mathOperator: (a: number, b: number) => number
-): Patch<IMathInputs, IAnimatableScalar<number>> {
+): Patch<IMathInputs, IMono<number>> {
   return inputs => ({
     value$: combineLatest(inputs.a, inputs.b, mathOperator)
   });

@@ -8,14 +8,13 @@ import { scan } from 'rxjs/operators/scan';
 import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
 
 import { ObservableMap, Patch } from './types';
-import { IAnimatableScalar } from './interfaces';
-import isObservable from './utils/isObservable';
+import { IMono } from './interfaces';
 
 (window as any).Observable = Observable;
 (window as any).fromEvent = fromEvent;
 (window as any).from = from;
 
-export class Animatable<I, O> {
+export default class Animatable<I, O> {
   public outputs: ObservableMap<O>;
   public mono: boolean;
 
