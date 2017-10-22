@@ -100,11 +100,11 @@
     "tslint-config-prettier": "^1.1.0",
     "tslint-config-standard": "^6.0.0",
     "typedoc": "^0.7.1",
-    "typescript": "^2.3.4",
+    "typescript": "^2.5.3",
     "validate-commit-msg": "^2.12.2"
   },
   "dependencies": {
-    "rxjs": "^5.5.0-beta.0",
+    "rxjs": "^5.5.0",
     "symbol-observable": "^1.0.4"
   }
 }
