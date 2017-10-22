@@ -27,10 +27,37 @@ export default class Animatable<I, O> {
     }
   }
 
+  //#region Animatable.mono
+  static mono<I>(
+    patch: Patch<IMono<I>, IMono<I>>,
+    input$: Observable<I>
+  ): Animatable<IMono<I>, IMono<I>>;
+  static mono<I, O>(
+    patch: Patch<IMono<I>, IMono<O>>,
+    input$: Observable<I>
+  ): Animatable<IMono<I>, IMono<O>>;
+  static mono<I, O>(
+    patch: Patch<IMono<I>, IMono<O>>,
+    input$: Observable<I>
+  ): Animatable<IMono<I>, IMono<O>> {
+    return new Animatable(patch, { value$: input$ });
+  }
+  //#endregion
+
+  //#region Animatable.create
+  static create<I>(
+    patch: Patch<I, I>,
+    inputs: ObservableMap<I>
+  ): Animatable<I, I>;
+  static create<I, O>(
+    patch: Patch<I, O>,
+    inputs: ObservableMap<I>
+  ): Animatable<I, O>;
   static create<I, O>(
     patch: Patch<I, O>,
     inputs: ObservableMap<I>
   ): Animatable<I, O> {
     return new Animatable(patch, inputs);
   }
+  //#endregion
 }

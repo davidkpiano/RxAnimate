@@ -1,12 +1,11 @@
 import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
 import { scan } from 'rxjs/operators/scan';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
-import Animatable from '../Animatable';
 import { Observable } from 'rxjs/Observable';
+
 import { IMono } from '../interfaces';
 import { Patch, ScalarObservableMap, ObservableMap } from '../types';
 import { combineOperator } from '../animators/combine';
-
 import { animationFrame } from '../observables/animationFrame';
 
 function mapValues<T, R>(
