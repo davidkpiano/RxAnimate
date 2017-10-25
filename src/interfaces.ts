@@ -1,5 +1,5 @@
 import { ObservableMap } from './types';
 
-export interface IMono<T> {
+export interface ISingle<T> {
   value$: T;
 }

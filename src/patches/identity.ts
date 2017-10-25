@@ -1,4 +1,4 @@
-import { Patch, ScalarObservableMap, ObservableMap } from '../types';
+import { Patch, SingleObservableMap, ObservableMap } from '../types';
 
 export default function identity<T>(
   inputs: ObservableMap<T>

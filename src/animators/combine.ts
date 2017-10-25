@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { scan } from 'rxjs/operators/scan';
 import { map } from 'rxjs/operators/map';
-import { IMono } from '../interfaces';
+import { ISingle } from '../interfaces';
 import { ObservableMap } from '../types';
 import * as mathPatches from '../patches/math';
 
@@ -27,8 +27,8 @@ export function combineOperator<T>(o: ObservableMap<T>) {
 
 export default function combine<T>(
   observableMap: ObservableMap<T>
-): Animatable<T, IMono<T>> {
-  const patch = (o: ObservableMap<T>): ObservableMap<IMono<T>> => {
+): Animatable<T, ISingle<T>> {
+  const patch = (o: ObservableMap<T>): ObservableMap<ISingle<T>> => {
     return {
       value$: combineOperator(o)
     };

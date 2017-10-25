@@ -4,21 +4,22 @@ import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { scan } from 'rxjs/operators/scan';
 import { map } from 'rxjs/operators/map';
-import { IMono } from '../interfaces';
+import { ISingle } from '../interfaces';
 import { ObservableMap } from '../types';
 import lerpPatch from '../patches/lerp';
+
+export type NumberMap = Record<any, number>;
 
 export default function lerp(
   rate: number,
   precision?: number
-): (
-  observable: Observable<number>
-) => Animatable<IMono<number>, IMono<number>> {
+): <T extends number | NumberMap>(
+  observable: Observable<T>
+) => Animatable<ISingle<T>, ISingle<T>> {
   const patch = lerpPatch(rate, precision);
-  return (observable: Observable<number>) => {
-    return Animatable.create<
-      IMono<number>,
-      IMono<number>
-    >(patch, { value$: observable });
+  return observable => {
+    return Animatable.create(patch, {
+      value$: observable
+    });
   };
 }

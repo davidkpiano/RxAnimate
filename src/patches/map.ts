@@ -1,7 +1,7 @@
 import { map as mapOperator } from 'rxjs/operators/map';
 import Animatable from '../Animatable';
 import { Observable } from 'rxjs/Observable';
-import { IMono } from '../interfaces';
+import { ISingle } from '../interfaces';
 
 import { fromOperator } from '../Patch';
 
