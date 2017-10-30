@@ -17,6 +17,8 @@ import { ISingle } from './interfaces';
 import combine from './animators/combine';
 import { move, position } from './sources/mouse';
 import toStyle from './sinks/toStyle';
+import tween from './animators/tween';
+import timeline from './sources/timeline';
 
 const input$ = fromEvent<Event>(
   document.querySelector('#input') as HTMLInputElement,
@@ -28,8 +30,25 @@ const toNumber = Animatable.create(
   { value$: input$ }
 );
 
+const duration$ = fromEvent<Event>(
+  document.querySelector('#duration') as HTMLInputElement,
+  'input'
+).pipe(mapOperator(e => +(e.target as HTMLInputElement).value), startWith(10000))
+
 const smooth = lerp(0.1);
 const move$ = smooth(position(document.body, 'mousemove'));
 move$.subscribe(toStyle('#foo, #bar'));
+
+(window as any).tl = timeline();
+
+(window as any).a = tween(0, 1, {
+  duration: duration$,
+  easing: t => 1 - Math.pow(1 - t, 3)
+}).subscribe((e: number) => {
+  (window as any).baz.style
+    .setProperty('transform', `translateX(
+      calc(${e} * 99vw)
+    )`)
+});
 
 export { Animatable };

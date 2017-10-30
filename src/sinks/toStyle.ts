@@ -1,10 +1,13 @@
 import css from 'stylefire/css';
 
+export function getElements(selector: HTMLElement | NodeList | string): HTMLElement | NodeList {
+  return typeof selector === 'string'
+    ? document.querySelectorAll(selector)
+    : selector;
+}
+
 export default function toStyle(selector: HTMLElement | NodeList | string) {
-  const element: HTMLElement | NodeList =
-    typeof selector === 'string'
-      ? document.querySelectorAll(selector)
-      : selector;
+  const element = getElements(selector);
 
   return function styleSink<T extends { [key: string]: string | number }>(
     value: T
