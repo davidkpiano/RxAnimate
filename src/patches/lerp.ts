@@ -2,26 +2,12 @@ import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
 import { scan } from 'rxjs/operators/scan';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
 import { Observable } from 'rxjs/Observable';
-
-import { ISingle } from '../interfaces';
-import { Patch, SingleObservableMap, ObservableMap } from '../types';
+import { Patch, SingleObservableMap, ObservableMap, Outputs } from '../types';
 import { combineOperator } from '../animators/combine';
 import { animationFrame } from '../sources/animationFrame';
+import mapValues from '../utils/mapValues';
 
 export type NumberMap = { [key: string]: number };
-
-function mapValues<T, R>(
-  object: Record<string, T>,
-  project: (value: T, index: string) => R
-): Record<string, R> {
-  const result: Record<string, R> = {};
-
-  Object.keys(object).forEach(key => {
-    result[key] = project(object[key], key);
-  });
-
-  return result;
-}
 
 function objectsEqual<T>(a: T, b: T) {
   const aKeys = Object.keys(a);
@@ -80,8 +66,8 @@ function isScalar(
 
 export default function lerp(rate: number, precision?: number) {
   return function<T extends number | NumberMap>(
-    inputs: ObservableMap<ISingle<T>>
-  ): ObservableMap<ISingle<T>> {
+    inputs: ObservableMap<Outputs<T>>
+  ): ObservableMap<Outputs<T>> {
     return {
       value$: animationFrame().pipe(
         withLatestFrom(inputs.value$, (frame: number, input) => input),

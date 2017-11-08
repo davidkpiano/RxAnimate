@@ -1,11 +1,10 @@
 import { Observable } from 'rxjs/Observable';
-import { ISingle } from './interfaces';
-import { Patch } from './types';
+import { Patch, Outputs } from './types';
 
 export function fromOperator<I, O>(
   operator: (...args: any[]) => (source: Observable<I>) => Observable<O>,
   ...args: any[]
-): Patch<ISingle<I>, ISingle<O>> {
+): Patch<Outputs<I>, Outputs<O>> {
   return inputs => ({
     value$: inputs.value$.pipe(operator(...args))
   });

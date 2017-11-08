@@ -11,8 +11,14 @@ import { scan } from 'rxjs/operators/scan';
 import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 
-import { ObservableMap, Patch, SingleObservableMap } from './types';
-import { ISingle } from './interfaces';
+import {
+  ObservableMap,
+  Patch,
+  SingleObservableMap,
+  ISingle,
+  Outputs,
+  Inputs
+} from './types';
 import { combineOperator } from './patches/combine';
 
 (window as any).Observable = Observable;
@@ -23,17 +29,16 @@ export interface IAnimatable {
   single: boolean;
 }
 
-export default class Animatable<I, O> {
-  public outputs: ObservableMap<O> | SingleObservableMap<O>;
-  public single: boolean;
+export default class Animatable<
+  I extends Inputs,
+  O extends Outputs
+> extends Observable<O['value$']> {
+  public outputs: ObservableMap<O>;
 
   constructor(public patch: Patch<I, O>, public inputs: ObservableMap<I>) {
+    super();
     this.outputs = patch(inputs);
-
-    // An Animatable is considered "single" if it outputs only a single stream of values.
-    if (Object.keys(this.outputs).length === 1 && 'value$' in this.outputs) {
-      this.single = true;
-    }
+    this.source = this.outputs.value$;
   }
 
   //#region Animatable.single
@@ -54,27 +59,19 @@ export default class Animatable<I, O> {
   //#endregion
 
   //#region Animatable.create
-  static create<I>(
+  static create<I extends Outputs>(
     patch: Patch<I, I>,
     inputs: ObservableMap<I>
   ): Animatable<I, I>;
-  static create<I, O>(
+  static create<I extends Inputs, O extends Outputs>(
     patch: Patch<I, O>,
     inputs: ObservableMap<I>
   ): Animatable<I, O>;
-  static create<I, O>(
+  static create<I extends Inputs, O extends Outputs>(
     patch: Patch<I, O>,
     inputs: ObservableMap<I>
   ): Animatable<I, O> {
     return new Animatable(patch, inputs);
   }
   //#endregion
-
-  public subscribe(...args: any[]): Subscription {
-    if (this.single) {
-      return (this.outputs as SingleObservableMap<O>).value$.subscribe(...args);
-    }
-
-    return combineOperator(this.outputs as ObservableMap<O>).subscribe(...args);
-  }
 }
