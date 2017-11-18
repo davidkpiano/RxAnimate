@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <canvas id="canvas" style="background:black;width:100%;height:100%"></canvas>
+
+  <script src="../dist/rxanimate.umd.js"></script>
+  <script src="../node_modules/rxjs/bundles/Rx.min.js"></script>
+  <script>
+    const opts = {
+      particleColor: "rgb(200,200,200)",
+      lineColor: "rgb(200,200,200)",
+      particleAmount: 30,
+      defaultSpeed: 1,
+      variantSpeed: 1,
+      defaultRadius: 2,
+      variantRadius: 2,
+      linkRadius: 200,
+    };
+
+    let delay = 200, tid,
+        rgb = opts.lineColor.match(/\d+/g);
+
+    const resizeReset = function ({ width, height }) {
+      window.canvas.width = width;
+      window.canvas.height = height;
+    }
+
+    const mouse$ = RxAnimate.lerp(0.1)(RxAnimate.mouse.position(document.body, 'mousemove'))
+      .pipe(Rx.operators.map(({x,y}) => ({
+        ...Particle(),
+        x,
+        y,
+        radius: 10
+      })));
+
+    const mouseDown$ = Rx.Observable.fromEvent(document.body, 'mousedown');
+    const mouseUp$ = Rx.Observable.fromEvent(document.body, 'mouseup');
+
+    const resize$ = RxAnimate
+      .fromEvent(window, 'resize')
+      .pipe(
+        Rx.operators.map(() => ({
+          width: window.innerWidth,
+          height: window.innerHeight
+        })),
+        Rx.operators.startWith({
+          width: window.innerWidth,
+          height: window.innerHeight
+        })
+      );
+
+    resize$.subscribe(resizeReset);
+
+    let checkDistance = function (x1, y1, x2, y2) {
+      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    };
+
+    function linkPoints(point1, hubs) {
+      for (let i = 0; i < hubs.length; i++) {
+        let distance = checkDistance(point1.x, point1.y, hubs[i].x, hubs[i].y);
+        let opacity = 1 - distance / opts.linkRadius;
+        if (opacity > 0) {
+          drawArea.lineWidth = 0.5;
+          drawArea.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
+          drawArea.beginPath();
+          drawArea.moveTo(point1.x, point1.y);
+          drawArea.lineTo(hubs[i].x, hubs[i].y);
+          drawArea.closePath();
+          drawArea.stroke();
+        }
+      }
+    }
+
+    function Particle(x = 0, y = 0, w, h) {
+      const particle = {
+        seed: {
+          x: Math.random(),
+          y: Math.random()
+        },
+        x,
+        y,
+        speed: opts.defaultSpeed + Math.random() * opts.variantSpeed,
+        speedAdjustment: 0,
+        directionAngle: Math.floor(Math.random() * 360),
+        color: opts.particleColor,
+        radius: opts.defaultRadius + Math.random() * opts.variantRadius
+      }
+
+      particle.vector = {
+        x: Math.cos(particle.directionAngle) * particle.speed,
+        y: Math.sin(particle.directionAngle) * particle.speed
+      };
+      return particle;
+    };
+
+    function drawParticle(p) {
+      drawArea.beginPath();
+      drawArea.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      drawArea.closePath();
+      drawArea.fillStyle = p.color;
+      drawArea.fill();
+    };
+
+
+    const particles = [];
+    for (let i = 0; i < opts.particleAmount; i++) {
+      particles.push(new Particle());
+    }
+
+    const frame$ = RxAnimate.animationFrame();
+
+    const canvasBody = document.getElementById("canvas"),
+      drawArea = canvasBody.getContext("2d");
+
+    function createUpdater(obj) {
+      return (state, action) => {
+        const reducer = obj[action.type];
+        if (!reducer) return state;
+        return reducer(state, action.payload);
+      }
+    }
+
+    function mergeActions(obj) {
+      const actions = [];
+      Object.keys(obj).forEach(key => {
+        actions.push(obj[key].pipe(
+          Rx.operators.map(e => ({
+            type: key,
+            payload: e
+          }))
+        ));
+      });
+
+      return Rx.Observable.merge(...actions);
+    }
+
+    const initialState = {
+      particles,
+      allParticles: [],
+      size: {
+        width: window.innerWidth,
+        height: window.innerHeight
+      },
+      rate: 1,
+      mouseParticle: Particle()
+    };
+
+    function updateParticles(particles, size, rate) {
+      const { width, height } = size;
+
+      return particles.map(p => {
+        if (!p.x) p.x = p.seed.x * width;
+        if (!p.y) p.y = p.seed.y * height;
+
+        if (p.y <= 0) p.y = 0;
+        if (p.x >= width || p.x <= 0) {
+          p.vector.x *= -1;
+        }
+        if (p.y >= height || p.y <= 0) {
+          p.vector.y *= -1;
+        }
+        if (p.x > width) p.x = width;
+        if (p.y > height) p.y = height;
+
+        p.x += p.vector.x * rate;
+        p.y += p.vector.y * rate;
+
+        return p;
+      });
+    }
+
+    function animation(actions, updates, initialState) {
+      const action$ = mergeActions(actions);
+      const updater = createUpdater(updates);
+      return action$.pipe(
+        Rx.operators.scan(updater, initialState),
+        Rx.operators.startWith(initialState)
+      );
+    }
+
+    const rateUpdates = {
+      mouseDown: () => 10,
+      mouseUp: () => 1
+    };
+
+    const rateActions = {
+      mouseDown: mouseDown$,
+      mouseUp: mouseUp$
+    };
+
+    const rateAnimation$ =
+      RxAnimate.lerp(.05)(animation(rateActions, rateUpdates, 1));
+
+      rateAnimation$.subscribe(e=>console.log({rate: e}))
+
+    const updates ={
+      mouse: (state, mouseParticle) => ({
+        ...state,
+        mouseParticle
+      }),
+      rate: (state, rate) => ({
+        ...state,
+        rate
+      }),
+      resize: (state, resize) => ({
+        ...state,
+        size: resize
+      }),
+      tick: (state) => {
+        const particles = updateParticles(state.particles, state.size, state.rate);
+
+        return {
+          ...state,
+          particles,
+          allParticles: particles.concat(state.mouseParticle)
+        }
+      }
+    };
+
+    const actions = {
+      mouse: mouse$,
+      rate: rateAnimation$,
+      resize: resize$,
+      tick: frame$
+    };
+
+    const state$ = animation(actions, updates, initialState);
+
+    state$.subscribe(({ allParticles, size }) => {
+      drawArea.clearRect(0, 0, size.width, size.height);
+      allParticles.forEach(drawParticle);
+      allParticles.forEach(p => linkPoints(p, allParticles));
+    });
+  </script>
+</body>
+
+</html>

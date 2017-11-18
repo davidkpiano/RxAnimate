@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs/Observable';
-import { Patch, Outputs } from './types';
+import { Patch, Outputs, Inputs } from './types';
 
 export function fromOperator<I, O>(
   operator: (...args: any[]) => (source: Observable<I>) => Observable<O>,

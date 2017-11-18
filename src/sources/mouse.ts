@@ -22,3 +22,7 @@ export function position(
 export function move(element: EventTarget): Observable<MouseEvent> {
   return fromEvent(element, 'mousemove');
 }
+
+export function down(element: EventTarget): Observable<MouseEvent> {
+  return fromEvent(element, 'mousedown');
+}

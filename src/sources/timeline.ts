@@ -12,7 +12,11 @@ import { map } from 'rxjs/operators/map';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
 import { tap } from 'rxjs/operators/tap';
 
-(window as any).cc = new BehaviorSubject('pause');
+export interface TimelineTick {
+  rate: number;
+  state: string;
+  offset: number;
+}
 
 export default function timeline(
   inputs: ObservableMap<{
@@ -28,7 +32,6 @@ export default function timeline(
     ? inputs.action$
     : internalAction$;
 
-  console.log(action$);
   action$.pipe(tap(e => console.log(e)));
   action$.subscribe(e => console.log(e));
 
@@ -47,7 +50,7 @@ export default function timeline(
   type AA = { rate: number; state: string; offset: number };
 
   const state$ = merge(delta$, action$, rate$).pipe(
-    scan<string | number | {}, AA>(
+    scan<string | number | {}, TimelineTick>(
       (state, action) => {
         if (typeof action === 'string') {
           switch (action) {
@@ -84,15 +87,6 @@ export default function timeline(
       { rate: 1, state: 'paused', offset: 0 } as AA
     )
   );
-
-  // const timelineDelta$ = delta$.pipe(
-  //   withLatestFrom(state$, (delta, state) => {
-  //     return state.state === 'paused' || state.state === 'finished'
-  //       ? 0
-  //       : state.rate * delta;
-  //   }),
-  //   distinctUntilChanged()
-  // );
 
   return {
     value$: state$.pipe(map(state => state.offset), distinctUntilChanged()),

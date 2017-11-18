@@ -6,6 +6,7 @@ export type SingleObservableMap<T> = { value$: Observable<T> };
 
 export interface Patch<I extends Inputs, O extends Outputs> {
   (inputs: ObservableMap<I>): ObservableMap<O>;
+  patchName?: string;
 }
 
 export interface ISingle<T> {

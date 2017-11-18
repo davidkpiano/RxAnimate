@@ -70,7 +70,7 @@ function isScalar(
 }
 
 export const patches = {
-  lerp(rate: number, precision?: number) {
+  lerp: function lerp(rate: number, precision?: number) {
     return function<T extends number | NumberMap>(
       inputs: ObservableMap<Outputs<T>>
     ): ObservableMap<Outputs<T>> {
@@ -99,8 +99,12 @@ export default function lerp(
 ) => Animatable<Outputs<T>, Outputs<T>> {
   const patch = patches.lerp(rate, precision);
   return observable => {
-    return Animatable.create(patch, {
-      value$: observable
-    });
+    return Animatable.create(
+      patch,
+      {
+        value$: observable
+      },
+      { name: 'lerp' }
+    );
   };
 }

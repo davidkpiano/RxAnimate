@@ -2,18 +2,15 @@ import toObservable from '../utils/toObservable';
 import Animatable from '../Animatable';
 import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { scan } from 'rxjs/operators/scan';
-import { map } from 'rxjs/operators/map';
 import { ObservableMap, Outputs } from '../types';
-import { patches } from '../animators/math';
 
-export function combineOperator<T>(o: ObservableMap<T>) {
-  const keys = Object.keys(o);
-  const os = keys.map((key: keyof T) => {
+export function combinePatch<T>(o: ObservableMap<T>): ObservableMap<Outputs<T>> {
+  const keys  = Object.keys(o) as (keyof T)[];
+  const os = keys.map((key) => {
     return o[key];
   });
 
-  return combineLatest<any, T>(os, (...values: Array<T[keyof T]>) => {
+  const value$ = combineLatest<any, T>(os, (...values: Array<T[keyof T]>) => {
     const result: Partial<T> = {};
 
     values.forEach((value, i) => {
@@ -22,15 +19,12 @@ export function combineOperator<T>(o: ObservableMap<T>) {
 
     return result as T;
   });
+
+  return { value$ };
 }
 
 export default function combine<T>(
   observableMap: ObservableMap<T>
 ): Animatable<T, Outputs<T>> {
-  const patch = (o: ObservableMap<T>): ObservableMap<Outputs<T>> => {
-    return {
-      value$: combineOperator(o)
-    };
-  };
-  return Animatable.create(patch, observableMap);
+  return Animatable.create(combinePatch, observableMap);
 }
