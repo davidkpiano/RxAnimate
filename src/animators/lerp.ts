@@ -8,7 +8,6 @@ import { map } from 'rxjs/operators/map';
 import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
 import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
 import { Patch, SingleObservableMap, ObservableMap, Outputs } from '../types';
-import { combineOperator } from '../animators/combine';
 import { animationFrame } from '../sources/animationFrame';
 import mapValues from '../utils/mapValues';
 
@@ -81,6 +80,10 @@ export const patches = {
           distinctUntilChanged((a, b) => {
             if (typeof a === 'number') {
               return a === b;
+            }
+
+            if (!a || !b) {
+              return false;
             }
 
             return objectsEqual(a, b);

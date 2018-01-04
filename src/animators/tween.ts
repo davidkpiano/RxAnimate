@@ -54,6 +54,7 @@ function transitionPatch(
   return { progress$, value$: progress$ };
 }
 
+// animator
 export default function tween(
   timing: ObservableMap<ITiming>
 ): Animatable<ITiming, ITween> {

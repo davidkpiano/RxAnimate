@@ -33,13 +33,29 @@
       window.canvas.height = height;
     }
 
-    const mouse$ = RxAnimate.lerp(0.1)(RxAnimate.mouse.position(document.body, 'mousemove'))
+    const m$ = RxAnimate.mouse.position(document.body, 'mousemove');
+
+    const mouse$ = (RxAnimate.mouse.position(document.body, 'mousemove'))
       .pipe(Rx.operators.map(({x,y}) => ({
         ...Particle(),
         x,
         y,
         radius: 10
       })));
+
+    const distance$ = m$.pipe(RxAnimate.mouse.distanceFrom(document.body));
+
+    distance$.subscribe(e=>console.log(e))
+
+    const mouseSpeed$ = RxAnimate.mouse.position(document.body, 'mousemove')
+      .pipe(Rx.operators.scan(({position}, nextPosition) => {
+        const speed = position
+          ? Math.hypot(nextPosition.x - position.x, nextPosition.y - position.y): 0;
+        return {
+          position: nextPosition,
+          speed
+        }
+      }), Rx.operators.map(s => s.speed));
 
     const mouseDown$ = Rx.Observable.fromEvent(document.body, 'mousedown');
     const mouseUp$ = Rx.Observable.fromEvent(document.body, 'mouseup');
@@ -101,9 +117,9 @@
       return particle;
     };
 
-    function drawParticle(p) {
+    function drawParticle(p, speed) {
       drawArea.beginPath();
-      drawArea.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      drawArea.arc(p.x, p.y, p.radius * speed * 0.4, 0, Math.PI * 2);
       drawArea.closePath();
       drawArea.fillStyle = p.color;
       drawArea.fill();
@@ -120,28 +136,6 @@
     const canvasBody = document.getElementById("canvas"),
       drawArea = canvasBody.getContext("2d");
 
-    function createUpdater(obj) {
-      return (state, action) => {
-        const reducer = obj[action.type];
-        if (!reducer) return state;
-        return reducer(state, action.payload);
-      }
-    }
-
-    function mergeActions(obj) {
-      const actions = [];
-      Object.keys(obj).forEach(key => {
-        actions.push(obj[key].pipe(
-          Rx.operators.map(e => ({
-            type: key,
-            payload: e
-          }))
-        ));
-      });
-
-      return Rx.Observable.merge(...actions);
-    }
-
     const initialState = {
       particles,
       allParticles: [],
@@ -150,6 +144,7 @@
         height: window.innerHeight
       },
       rate: 1,
+      speed: 0,
       mouseParticle: Particle()
     };
 
@@ -177,15 +172,6 @@
       });
     }
 
-    function animation(actions, updates, initialState) {
-      const action$ = mergeActions(actions);
-      const updater = createUpdater(updates);
-      return action$.pipe(
-        Rx.operators.scan(updater, initialState),
-        Rx.operators.startWith(initialState)
-      );
-    }
-
     const rateUpdates = {
       mouseDown: () => 10,
       mouseUp: () => 1
@@ -197,9 +183,7 @@
     };
 
     const rateAnimation$ =
-      RxAnimate.lerp(.05)(animation(rateActions, rateUpdates, 1));
-
-      rateAnimation$.subscribe(e=>console.log({rate: e}))
+      RxAnimate.lerp(.05)(RxAnimate.animation(rateActions, rateUpdates, 1));
 
     const updates ={
       mouse: (state, mouseParticle) => ({
@@ -213,6 +197,10 @@
       resize: (state, resize) => ({
         ...state,
         size: resize
+      }),
+      speed: (state, mouseSpeed) => ({
+        ...state,
+        speed: mouseSpeed
       }),
       tick: (state) => {
         const particles = updateParticles(state.particles, state.size, state.rate);
@@ -229,14 +217,15 @@
       mouse: mouse$,
       rate: rateAnimation$,
       resize: resize$,
-      tick: frame$
+      tick: frame$,
+      speed: RxAnimate.lerp(0.1)(mouseSpeed$)
     };
 
-    const state$ = animation(actions, updates, initialState);
+    const state$ = RxAnimate.animation(actions, updates, initialState);
 
-    state$.subscribe(({ allParticles, size }) => {
+    state$.subscribe(({ allParticles, size, speed }) => {
       drawArea.clearRect(0, 0, size.width, size.height);
-      allParticles.forEach(drawParticle);
+      allParticles.forEach(p => drawParticle(p, speed));
       allParticles.forEach(p => linkPoints(p, allParticles));
     });
   </script>

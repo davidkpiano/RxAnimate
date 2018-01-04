@@ -20,5 +20,6 @@ import timeline from './sources/timeline';
 import { mapTo } from 'rxjs/operators/mapTo';
 import { merge } from 'rxjs/observable/merge';
 import { animationFrame } from './sources/animationFrame';
+import animation from './animation';
 
-export { Animatable, fromEvent, animationFrame, mouse, lerp };
+export { Animatable, fromEvent, animationFrame, mouse, lerp, animation };

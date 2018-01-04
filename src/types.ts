@@ -24,3 +24,14 @@ export interface Outputs<T = any> extends Inputs {
 export interface SingleInput<T> {
   value$: T;
 }
+
+export interface Position2D {
+  x: number;
+  y: number;
+}
+
+export interface Position3D {
+  x: number;
+  y: number;
+  z: number;
+}
