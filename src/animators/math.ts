@@ -1,20 +1,18 @@
-import toObservable from '../utils/toObservable';
-import Animatable from '../Animatable';
-import { Observable } from 'rxjs/Observable';
-import { combineLatest } from 'rxjs/observable/combineLatest';
-import { Outputs, Patch, Inputs, SingleInput } from '../types';
+import toObservable from "../utils/toObservable"
+import Animatable from "../Animatable"
+import { Observable } from "rxjs/Observable"
+import { combineLatest } from "rxjs/observable/combineLatest"
+import { Outputs, Patch, Inputs, SingleInput } from "../types"
 
 export interface IMathInputs {
-  a: number;
-  b: number;
+  a: number
+  b: number
 }
 
-function map2(
-  mathOperator: (a: number, b: number) => number
-): Patch<IMathInputs, Outputs<number>> {
+function map2(mathOperator: (a: number, b: number) => number): Patch<IMathInputs, Outputs<number>> {
   return inputs => ({
-    value$: combineLatest(inputs.a, inputs.b, mathOperator)
-  });
+    value: combineLatest(inputs.a, inputs.b, mathOperator)
+  })
 }
 
 export const patches: Record<string, Patch<IMathInputs, Outputs<number>>> = {
@@ -22,7 +20,7 @@ export const patches: Record<string, Patch<IMathInputs, Outputs<number>>> = {
   subtract: map2((a, b) => a - b),
   multiply: map2((a, b) => a * b),
   divide: map2((a, b) => a / b)
-};
+}
 
 export function add(
   a: number | Observable<number> | Animatable<any, Outputs<number>>,
@@ -31,7 +29,7 @@ export function add(
   return Animatable.create(patches.add, {
     a: toObservable(a),
     b: toObservable(b)
-  });
+  })
 }
 
 export function subtract(
@@ -41,7 +39,7 @@ export function subtract(
   return Animatable.create(patches.subtract, {
     a: toObservable(a),
     b: toObservable(b)
-  });
+  })
 }
 
 export function multiply(
@@ -51,7 +49,7 @@ export function multiply(
   return Animatable.create(patches.multiply, {
     a: toObservable(a),
     b: toObservable(b)
-  });
+  })
 }
 
 export function divide(
@@ -61,5 +59,5 @@ export function divide(
   return Animatable.create(patches.divide, {
     a: toObservable(a),
     b: toObservable(b)
-  });
+  })
 }

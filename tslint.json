@@ -2,9 +2,5 @@
   "extends": [
     "tslint-config-standard",
     "tslint-config-prettier"
-  ],
-  "rules": {
-    "no-unused-expression": true,
-    "no-unused-variable": true
-  }
+  ]
 }

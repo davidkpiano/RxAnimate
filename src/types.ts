@@ -1,37 +1,37 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable } from "rxjs/Observable"
 
-export type ObservableMap<T> = { [key in keyof T]: Observable<T[key]> };
+export type ObservableMap<T> = { [key in keyof T]: Observable<T[key]> }
 
-export type SingleObservableMap<T> = { value$: Observable<T> };
+export type SingleObservableMap<T> = { value$: Observable<T> }
 
 export interface Patch<I extends Inputs, O extends Outputs> {
-  (inputs: ObservableMap<I>): ObservableMap<O>;
-  patchName?: string;
+  (inputs: ObservableMap<I>): ObservableMap<O>
+  readonly patchName?: string
 }
 
 export interface ISingle<T> {
-  value$: T;
+  readonly value$: T
 }
 
 export interface Inputs {
-  [key: string]: any;
+  readonly [key: string]: any
 }
 
 export interface Outputs<T = any> extends Inputs {
-  value$: T;
+  readonly value$: T
 }
 
 export interface SingleInput<T> {
-  value$: T;
+  readonly value$: T
 }
 
 export interface Position2D {
-  x: number;
-  y: number;
+  readonly x: number
+  readonly y: number
 }
 
 export interface Position3D {
-  x: number;
-  y: number;
-  z: number;
+  readonly x: number
+  readonly y: number
+  readonly z: number
 }

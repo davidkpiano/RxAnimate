@@ -1,26 +1,24 @@
-import toObservable from '../utils/toObservable';
-import Animatable from '../Animatable';
-import { Observable } from 'rxjs/Observable';
-import { combineLatest } from 'rxjs/observable/combineLatest';
-import { scan } from 'rxjs/operators/scan';
-import { map } from 'rxjs/operators/map';
+import Animatable from "../Animatable"
+import { Observable } from "rxjs/Observable"
 
-import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
-import { distinctUntilChanged } from 'rxjs/operators/distinctUntilChanged';
-import { Patch, SingleObservableMap, ObservableMap, Outputs } from '../types';
-import { animationFrame } from '../sources/animationFrame';
-import mapValues from '../utils/mapValues';
+import { scan } from "rxjs/operators/scan"
 
-export type NumberMap = { [key: string]: number };
+import { withLatestFrom } from "rxjs/operators/withLatestFrom"
+import { distinctUntilChanged } from "rxjs/operators/distinctUntilChanged"
+import { ObservableMap, Outputs } from "../types"
+import { animationFrame } from "../sources/animationFrame"
+import mapValues from "../utils/mapValues"
+
+export type NumberMap = { [key: string]: number }
 
 function objectsEqual<T>(a: T, b: T) {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
+  const aKeys = Object.keys(a)
+  const bKeys = Object.keys(b)
   if (aKeys.length !== bKeys.length) {
-    return false;
+    return false
   }
 
-  return aKeys.every(key => (a as any)[key] === (b as any)[key]);
+  return aKeys.every(key => (a as any)[key] === (b as any)[key])
 }
 
 function linearInterpolate(
@@ -29,44 +27,34 @@ function linearInterpolate(
   rate: number,
   precision: number = 4
 ): number {
-  if (isNaN(value) && !isNaN(targetValue)) return targetValue;
-  if (isNaN(targetValue) && !isNaN(value)) return value;
-  const delta = (targetValue - value) * rate;
+  if (isNaN(value) && !isNaN(targetValue)) return targetValue
+  if (isNaN(targetValue) && !isNaN(value)) return value
+  const delta = (targetValue - value) * rate
 
-  return Number((value + delta).toPrecision(precision));
+  return Number((value + delta).toPrecision(precision))
 }
 
 function isNumericRecord(val: any): val is Record<string, number> {
-  return typeof val === 'object';
+  return typeof val === "object"
 }
 
 function interpolate(rate: number, precision: number = 4) {
   return function<T extends number | NumberMap>(value: T, targetValue: T): T {
     if (isNumericRecord(value)) {
-      return mapValues(value, (subValue, key) =>
-        linearInterpolate(
-          subValue,
-          (targetValue as NumberMap)[key],
-          rate,
-          precision
-        )
-      ) as T;
+      return mapValues(value, (subValue: number, key) =>
+        linearInterpolate(subValue, (targetValue as NumberMap)[key], rate, precision)
+      ) as T
     } else {
-      return linearInterpolate(
-        value as number,
-        targetValue as number,
-        rate,
-        precision
-      ) as T;
+      return linearInterpolate(value as number, targetValue as number, rate, precision) as T
     }
-  };
+  }
 }
 
-function isScalar(
-  inputs: SingleObservableMap<number> | ObservableMap<Record<string, number>>
-): inputs is SingleObservableMap<number> {
-  return Object.keys(inputs).length === 1 && 'value$' in inputs;
-}
+// function isScalar(
+//   inputs: SingleObservableMap<number> | ObservableMap<Record<string, number>>
+// ): inputs is SingleObservableMap<number> {
+//   return Object.keys(inputs).length === 1 && 'value$' in inputs;
+// }
 
 export const patches = {
   lerp: function lerp(rate: number, precision?: number) {
@@ -75,39 +63,39 @@ export const patches = {
     ): ObservableMap<Outputs<T>> {
       return {
         value$: animationFrame().pipe(
-          withLatestFrom(inputs.value$, (frame: number, input) => input),
+          withLatestFrom(inputs.value, (_, input) => input),
           scan(interpolate(rate, precision)),
           distinctUntilChanged((a, b) => {
-            if (typeof a === 'number') {
-              return a === b;
+            if (typeof a === "number") {
+              return a === b
             }
 
             if (!a || !b) {
-              return false;
+              return false
             }
 
-            return objectsEqual(a, b);
+            return objectsEqual(a, b)
           })
         )
-      };
-    };
+      }
+    }
   }
-};
+}
 
 export default function lerp(
   rate: number,
   precision?: number
-): <T extends number | NumberMap>(
-  observable: Observable<T>
-) => Animatable<Outputs<T>, Outputs<T>> {
-  const patch = patches.lerp(rate, precision);
+): (
+  observable: Observable<number | NumberMap>
+) => Animatable<Outputs<number | NumberMap>, Outputs<number | NumberMap>> {
+  const patch = patches.lerp(rate, precision)
   return observable => {
     return Animatable.create(
       patch,
       {
         value$: observable
       },
-      { name: 'lerp' }
-    );
-  };
+      { name: "lerp" }
+    )
+  }
 }

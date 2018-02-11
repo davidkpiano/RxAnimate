@@ -1,25 +1,8 @@
-import { Observable } from 'rxjs/Observable';
-import { fromEvent } from 'rxjs/observable/fromEvent';
-import { from } from 'rxjs/observable/from';
-import { of } from 'rxjs/observable/of';
-import { combineLatest } from 'rxjs/observable/combineLatest';
-import { map as mapOperator } from 'rxjs/operators/map';
-import { scan } from 'rxjs/operators/scan';
-import { withLatestFrom } from 'rxjs/operators/withLatestFrom';
-import { startWith } from 'rxjs/operators/startWith';
-import { add, subtract, multiply, divide } from './animators/math';
-import lerp from './animators/lerp';
-import isObservable from './utils/isObservable';
-import Animatable from './Animatable';
-import { ObservableMap } from './types';
-import combine from './animators/combine';
-import * as mouse from './sources/mouse';
-import toStyle from './sinks/toStyle';
-import tween, { transition } from './animators/tween';
-import timeline from './sources/timeline';
-import { mapTo } from 'rxjs/operators/mapTo';
-import { merge } from 'rxjs/observable/merge';
-import { animationFrame } from './sources/animationFrame';
-import animation from './animation';
+import { fromEvent } from "rxjs/observable/fromEvent"
+import lerp from "./animators/lerp"
+import Animatable from "./Animatable"
+import * as mouse from "./sources/mouse"
+import { animationFrame } from "./sources/animationFrame"
+import animation from "./animation"
 
-export { Animatable, fromEvent, animationFrame, mouse, lerp, animation };
+export { Animatable, fromEvent, animationFrame, mouse, lerp, animation }
